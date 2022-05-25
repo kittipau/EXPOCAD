@@ -4,9 +4,11 @@
  */
 package cadexpo;
 
-
 import cadexpo.Servidor.Servidor;
 import cadexpo.Servidor.SesionServidor;
+import java.awt.Image;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -15,7 +17,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Iterator;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.UIManager;
+import pojos.ExcepcionExpo;
+import pojos.Usuario;
+import pojos.Configuracion;
+import pojos.Participante;
 
 /**
  *
@@ -35,7 +46,7 @@ public class CADexpo {
     public CADexpo() throws ExcepcionExpo {
         try {
             Class.forName("org.postgresql.Driver");
-           // Class.forName("oracle.jdbc.driver.OracleDriver");
+            // Class.forName("oracle.jdbc.driver.OracleDriver");
         } catch (ClassNotFoundException ex) {
             ExcepcionExpo e = new ExcepcionExpo();
             e.setCodigoError(null);
@@ -53,7 +64,7 @@ public class CADexpo {
      */
     private void conectarExpo() throws ExcepcionExpo {
         try {
-                conexion = DriverManager.getConnection("jdbc:postgresql://192.168.0.27:5432/BIAAF", "odoo", "123abc.");
+            conexion = DriverManager.getConnection("jdbc:postgresql://192.168.0.27:5432/BIAAF", "odoo", "123abc.");
             //conexion = DriverManager.getConnection("jdbc:oracle:thin:@192.168.0.69:1521:test", "EXPO", "kk");
             //conexion = DriverManager.getConnection("jdbc:oracle:thin:@172.16.200.69:1521:test", "EXPO", "kk");
 
@@ -67,8 +78,6 @@ public class CADexpo {
         }
     }
 
-    
-    
     //-----------------------------------------------------------------------------------------------
     //   USUARIOS
     //-----------------------------------------------------------------------------------------------
@@ -83,19 +92,18 @@ public class CADexpo {
     public int insertarUsuario(Usuario usuario) throws ExcepcionExpo {
         conectarExpo();
         int registrosafectados = 0;
-        String dml = "insert into PAULA_USUARIOS(USERNAME, EMAIL, CONTRASENA)"
+        String dml = "insert into biaaf_usuario(USERNAME, EMAIL, CONTRASENA)"
                 + "values ( ?, ?, ?)";
-        try {         
-            
+        try {
+
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
             sentenciaPreparada.setObject(1, usuario.getUser());
             sentenciaPreparada.setObject(2, usuario.getMail());
             sentenciaPreparada.setObject(3, usuario.getContra());
             registrosafectados = sentenciaPreparada.executeUpdate();
-            sentenciaPreparada.close(); 
+            sentenciaPreparada.close();
             conexion.close();
-        
-        
+
         } catch (SQLException ex) {
             ExcepcionExpo e = new ExcepcionExpo();
             e.setCodigoError(ex.getErrorCode());
@@ -135,7 +143,7 @@ public class CADexpo {
     public int eliminarUsuario(String username) throws ExcepcionExpo {
         conectarExpo();
 
-        String dml = "delete from PAULA_USUARIOS where USERNAME= " +"'"+ username +"'";
+        String dml = "delete from biaaf_usuario where USERNAME= " + "'" + username + "'";
         int registrosAfectados = 0;
 
         try {
@@ -174,13 +182,13 @@ public class CADexpo {
 
         conectarExpo();
         int registrosafectados = 0;
-        String dml = "update PAULA_USUARIOS set USERNAME = ?, MAIL = ?, CONTRA = ?, DISENO_ID = ? where    USERNAME = ?";
+        String dml = "update biaaf_usuario set USERNAME = ?, MAIL = ?, CONTRA = ?, DISENO_ID = ? where    USERNAME = ?";
         try {
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
             sentenciaPreparada.setObject(1, u.getUser());
             sentenciaPreparada.setObject(2, u.getMail());
             sentenciaPreparada.setObject(3, u.getContra());
-            sentenciaPreparada.setObject(4, u.getDiseño().getDiseñoID());
+            //  sentenciaPreparada.setObject(4, u.getDiseño().getDiseñoID());
             sentenciaPreparada.setString(5, username);
 
             registrosafectados = sentenciaPreparada.executeUpdate();
@@ -230,9 +238,8 @@ public class CADexpo {
      */
     public Usuario iniciarSesion(String username, String contraseña) throws ExcepcionExpo {
         Usuario u = new Usuario();
-        Diseno d = new Diseno();
         conectarExpo();
-        String dml = "select * from PAULA_USUARIOS where USERNAME = ? and CONTRASENA = ?";
+        String dml = "select * from biaaf_usuario where USERNAME = ? and CONTRASENA = ?";
         try {
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
             sentenciaPreparada.setString(1, username);
@@ -244,8 +251,6 @@ public class CADexpo {
             u.setContra(resultado.getString("CONTRA"));
             u.setUser(resultado.getString("USERNAME"));
             u.setMail(resultado.getString("MAIL"));
-            u.setDiseño(buscarDiseno(resultado.getInt("DISENO_ID")));
-
             sentenciaPreparada.close();
             conexion.close();
 
@@ -268,20 +273,19 @@ public class CADexpo {
         return u;
     }
 
-        public int buscarUsuario(String username) throws ExcepcionExpo {
+    public int buscarUsuario(String username) throws ExcepcionExpo {
         Usuario u = new Usuario();
-        Diseno d = new Diseno();
         conectarExpo();
-        int registrosafectados =0;
-        
-        String dml = "select * from PAULA_USUARIOS where USERNAME = ?";
+        int registrosafectados = 0;
+
+        String dml = "select * from biaaf_usuario where USERNAME = ?";
         try {
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
             sentenciaPreparada.setString(1, username);
             ResultSet resultado = sentenciaPreparada.executeQuery();
             resultado.next();
             registrosafectados = sentenciaPreparada.executeUpdate();
-            
+
             sentenciaPreparada.close();
             conexion.close();
 
@@ -303,8 +307,7 @@ public class CADexpo {
         }
         return registrosafectados;
     }
-//
-// 
+
     /**
      * Método para buscar la información de un diseñador de la Base de Datos
      *
@@ -314,19 +317,24 @@ public class CADexpo {
      * personalizada a través de ExcepcionExpo
      *
      */
-    public Disenador buscarDisenador(Integer disenadorID) throws ExcepcionExpo {
-        Disenador d = new Disenador();
+    public Participante buscarDisenador(Participante participante) throws ExcepcionExpo, IOException {
+        Participante p = new Participante();
         conectarExpo();
-        String dml = "select * from DISENADOR where DISENADOR_ID = ?";
+        String dml = "select * from BIAAF_PARTICIPANTE where aliasdisenador  = ?";
         try {
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
-            sentenciaPreparada.setInt(1, disenadorID);
+            sentenciaPreparada.setString(1, participante.getNombreDisenador());
             ResultSet resultado = sentenciaPreparada.executeQuery();
 
             resultado.next();
-            d.setDiseñadorID(resultado.getInt("DISENADOR_ID"));
-            d.setAlias(resultado.getString("ALIAS"));
-            d.setDescripcion(resultado.getString("DESCRIPCION"));
+            p.setDescripcionDiseno(resultado.getString("descripciondiseno"));
+            p.setDesripcionDisenador(resultado.getString("descripciondisenador"));
+            p.setNombreDisenador(resultado.getString("NOMBREDISENADOR"));
+            p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
+            p.setParticipanteID(resultado.getInt("ID"));
+            p.setImagenDiseno(ConvertirImagen(resultado.getBytes("IMAGENDISENO")));
+            p.setImagenDisenador(ConvertirImagen(resultado.getBytes("IMAGENDISENADOR")));
+
             sentenciaPreparada.close();
             conexion.close();
 
@@ -346,7 +354,7 @@ public class CADexpo {
             }
             throw e;
         }
-        return d;
+        return p;
     }
 
     /**
@@ -356,22 +364,26 @@ public class CADexpo {
      * @throws ExcepcionExpo En caso de algún error se produce la excepción
      * personalizada a través de ExcepcionExpo
      */
-    public ArrayList<Disenador> leerDisenadores() throws ExcepcionExpo {
-        ArrayList<Disenador> listaDisenadores = new ArrayList<Disenador>();
+    public ArrayList<Participante> leerDisenadores() throws ExcepcionExpo, IOException {
+        ArrayList<Participante> listaDisenadores = new ArrayList<Participante>();
         conectarExpo();
-        String dql1 = "select * from DISENADOR";
+        String dql1 = "select * from BIAAF_PARTICIPANTE";
 
         try {
             Statement sentencia = conexion.createStatement();
             ResultSet resultado = sentencia.executeQuery(dql1);
 
             while (resultado.next()) {
-                Disenador d = new Disenador();
-                d.setDiseñadorID(resultado.getInt("DISENADOR_ID"));
-                d.setAlias(resultado.getString("ALIAS"));
-                d.setDescripcion(resultado.getString("DESCRIPCION"));
+                Participante p = new Participante();
+                p.setDescripcionDiseno(resultado.getString("descripciondiseno"));
+                p.setDesripcionDisenador(resultado.getString("descripciondisenador"));
+                p.setNombreDisenador(resultado.getString("NOMBREDISENADOR"));
+                p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
+                p.setParticipanteID(resultado.getInt("ID"));
+                p.setImagenDiseno(ConvertirImagen(resultado.getBytes("IMAGENDISENO")));
+                p.setImagenDisenador(ConvertirImagen(resultado.getBytes("IMAGENDISENADOR")));
 
-                listaDisenadores.add(d);
+                listaDisenadores.add(p);
             }
             resultado.close();
 
@@ -391,103 +403,101 @@ public class CADexpo {
 
 //   
 // 
-    /**
-     * Método para buscar la información de un diseño de la Base de Datos
-     *
-     * @param disenoID El id del diseño que se quiere buscar
-     * @return a Devuelve un diseñador con la informacion encontrada en la BD
-     * @throws ExcepcionExpo En caso de algún error se produce la excepción
-     * personalizada a través de ExcepcionExpo
-     *
-     */
-    public Diseno buscarDiseno(Integer disenoID) throws ExcepcionExpo {
-        Diseno d = new Diseno();
-        Disenador di = new Disenador();
-        conectarExpo();
-        String dml = "select * from DISENO where DISENO_ID = ?";
-        try {
-            PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
-            sentenciaPreparada.setInt(1, disenoID);
-            ResultSet resultado = sentenciaPreparada.executeQuery();
-
-            resultado.next();
-            d.setDiseñoID(resultado.getInt("DISENO_ID"));
-            d.setNombre(resultado.getString("NOMBRE"));
-            d.setDescripcion(resultado.getString("DESCRIPCION"));
-            di = buscarDisenador(resultado.getInt("DISENADOR_ID"));
-            d.setDiseñador(di);
-            sentenciaPreparada.close();
-            conexion.close();
-
-        } catch (SQLException ex) {
-            ExcepcionExpo e = new ExcepcionExpo();
-            e.setCodigoError(ex.getErrorCode());
-            e.setMensajeErrorBD(ex.getMessage());
-            e.setSentenciaSQL(dml);
-            switch (ex.getErrorCode()) {
-
-                case 17011:
-                    e.setMensajeErrorUsuario("No existe ningún artista con ese ID.");
-                    break;
-                default:
-                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
-
-            }
-            throw e;
-        }
-        return d;
-    }
-
-    /**
-     * Método para ver todos los diseños de la Base de datos
-     *
-     * @return listadisenos. Devuelve un ArrayList con la lista de diseños
-     * @throws ExcepcionExpo En caso de algún error se produce la excepción
-     * personalizada a través de ExcepcionExpo
-     */
-    public ArrayList<Diseno> leerDisenos() throws ExcepcionExpo {
-        ArrayList<Diseno> listadisenos = new ArrayList<Diseno>();
-        conectarExpo();
-        Diseno d = new Diseno();
-        Disenador di = new Disenador();
-        String dql1 = "select * from DISENO";
-
-        try {
-            Statement sentencia = conexion.createStatement();
-            ResultSet resultado = sentencia.executeQuery(dql1);
-
-            while (resultado.next()) {
-                d.setDiseñoID(resultado.getInt("DISENO_ID"));
-                d.setNombre(resultado.getString("NOMBRE"));
-                d.setDescripcion(resultado.getString("DESCRIPCION"));
-                di = buscarDisenador(resultado.getInt("DISENADOR_ID"));
-                d.setDiseñador(di);
-                listadisenos.add(d);
-            }
-            resultado.close();
-
-            sentencia.close();
-            conexion.close();
-        } catch (SQLException ex) {
-            ExcepcionExpo e = new ExcepcionExpo();
-            e.setCodigoError(ex.getErrorCode());
-            e.setMensajeErrorBD(ex.getMessage());
-            e.setSentenciaSQL(dql1);
-            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
-
-            throw e;
-        }
-        return listadisenos;
-    }
-
-    
-     /**
-//     * Método para ver todos los usuarios de la Base de datos
+//    /**
+//     * Método para buscar la información de un diseño de la Base de Datos
 //     *
-//     * @return listaUsuarios. Devuelve un ArrayList con la lista de usuarios
+//     * @param disenoID El id del diseño que se quiere buscar
+//     * @return a Devuelve un diseñador con la informacion encontrada en la BD
+//     * @throws ExcepcionExpo En caso de algún error se produce la excepción
+//     * personalizada a través de ExcepcionExpo
+//     *
+//     */
+//    public Diseno buscarDiseno(String nombre) throws ExcepcionExpo {
+//        Diseno d = new Diseno();
+//        Disenador di = new Disenador();
+//        conectarExpo();
+//        String dml = "select * from DISENO where NOMBRE = ?";
+//        try {
+//            PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
+//            sentenciaPreparada.setString(1, nombre);
+//            ResultSet resultado = sentenciaPreparada.executeQuery();
+//
+//            resultado.next();
+//            d.setDiseñoID(resultado.getInt("DISENO_ID"));
+//            d.setNombre(resultado.getString("NOMBRE"));
+//            d.setDescripcion(resultado.getString("DESCRIPCION"));
+//            di = buscarDisenador(resultado.getInt("DISENADOR_ID"));
+//            d.setDiseñador(di);
+//            sentenciaPreparada.close();
+//            conexion.close();
+//
+//        } catch (SQLException ex) {
+//            ExcepcionExpo e = new ExcepcionExpo();
+//            e.setCodigoError(ex.getErrorCode());
+//            e.setMensajeErrorBD(ex.getMessage());
+//            e.setSentenciaSQL(dml);
+//            switch (ex.getErrorCode()) {
+//
+//                case 17011:
+//                    e.setMensajeErrorUsuario("No existe ningún artista con ese ID.");
+//                    break;
+//                default:
+//                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
+//
+//            }
+//            throw e;
+//        }
+//        return d;
+//    }
+//
+//    /**
+//     * Método para ver todos los diseños de la Base de datos
+//     *
+//     * @return listadisenos. Devuelve un ArrayList con la lista de diseños
 //     * @throws ExcepcionExpo En caso de algún error se produce la excepción
 //     * personalizada a través de ExcepcionExpo
 //     */
+//    public ArrayList<Diseno> leerDisenos() throws ExcepcionExpo {
+//        ArrayList<Diseno> listadisenos = new ArrayList<Diseno>();
+//        conectarExpo();
+//        Diseno d = new Diseno();
+//        Disenador di = new Disenador();
+//        String dql1 = "select * from DISENO";
+//
+//        try {
+//            Statement sentencia = conexion.createStatement();
+//            ResultSet resultado = sentencia.executeQuery(dql1);
+//
+//            while (resultado.next()) {
+//                d.setDiseñoID(resultado.getInt("DISENO_ID"));
+//                d.setNombre(resultado.getString("NOMBRE"));
+//                d.setDescripcion(resultado.getString("DESCRIPCION"));
+//                di = buscarDisenador(resultado.getInt("DISENADOR_ID"));
+//                d.setDiseñador(di);
+//                listadisenos.add(d);
+//            }
+//            resultado.close();
+//
+//            sentencia.close();
+//            conexion.close();
+//        } catch (SQLException ex) {
+//            ExcepcionExpo e = new ExcepcionExpo();
+//            e.setCodigoError(ex.getErrorCode());
+//            e.setMensajeErrorBD(ex.getMessage());
+//            e.setSentenciaSQL(dql1);
+//            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
+//
+//            throw e;
+//        }
+//        return listadisenos;
+//    }
+
+    /**
+     * // * Método para ver todos los usuarios de la Base de datos // * // *
+     * @return listaUsuarios. Devuelve un ArrayList con la lista de usuarios //
+     * * @throws ExcepcionExpo En caso de algún error se produce la excepción //
+     * * personalizada a través de ExcepcionExpo //
+     */
 //    public ArrayList<Usuario> leerUsuarios() throws ExcepcionExpo {
 //        ArrayList<Usuario> listaUsuarios = new ArrayList<Usuario>();
 //        conectarExpo();
@@ -523,17 +533,13 @@ public class CADexpo {
 //        }
 //        return listaUsuarios;
 //    }
-
-    
-       /**
-//     * Método para insertar un nuevo diseñador en la Base de datos
-//     *
-//     * @param disenador Objeto Disenador con todos los datos que se quieren
-//     * insertar
-//     * @return Cantidad de registros insertados (1 si se ha insertado, 0 si no.)
-//     * @throws ExcepcionExpo En caso de algún error se produce la excepción
-//     * personalizada a través de ExcepcionExpo
-//     */
+    /**
+     * // * Método para insertar un nuevo diseñador en la Base de datos // * //
+     * * @param disenador Objeto Disenador con todos los datos que se quieren //
+     * * insertar // * @return Cantidad de registros insertados (1 si se ha
+     * insertado, 0 si no.) // * @throws ExcepcionExpo En caso de algún error se
+     * produce la excepción // * personalizada a través de ExcepcionExpo //
+     */
 //    public int insertarDisenador(Disenador disenador) throws ExcepcionExpo {
 //        conectarExpo();
 //        int registrosafectados = 0;
@@ -669,8 +675,7 @@ public class CADexpo {
 //        }
 //        return registrosafectados;
 //    }
-    
-     //-----------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------------------------
 //    //   DISEÑOS
 //    //-----------------------------------------------------------------------------------------------
 //    /**
@@ -721,16 +726,13 @@ public class CADexpo {
 //
 //        return registrosafectados;
 //    }
-
-    
-       /**
-//     * Método para eliminar un diseno de la Base de datos
-//     *
-//     * @param disenoID id del disenador que se quiere eliminar
-//     * @return Cantidad de registros insertados (1 si se ha eliminado, 0 si no)
-//     * @throws ExcepcionExpo En caso de algún error se produce la excepción
-//     * personalizada a través de ExcepcionExpo
-//     */
+    /**
+     * // * Método para eliminar un diseno de la Base de datos // * // * @param
+     * disenoID id del disenador que se quiere eliminar // * @return Cantidad de
+     * registros insertados (1 si se ha eliminado, 0 si no) // * @throws
+     * ExcepcionExpo En caso de algún error se produce la excepción // *
+     * personalizada a través de ExcepcionExpo //
+     */
 //    public int eliminarDiseno(Integer disenoID) throws ExcepcionExpo {
 //        conectarExpo();
 //
@@ -761,8 +763,6 @@ public class CADexpo {
 //        }
 //        return registrosAfectados;
 //    }
-
-    
 //    /**
 //     * Método para actualizar la información de un Diseñador
 //     *
@@ -819,10 +819,6 @@ public class CADexpo {
 //        }
 //        return registrosafectados;
 //    }
-
-
-   
-    
     //   
 //    //-----------------------------------------------------------------------------------------------
 //    //   CONFIGURACIÓN
@@ -886,7 +882,6 @@ public class CADexpo {
 //        return registrosafectados;
 //    }
 //    
-    
 //    public Configuracion verConfig() throws ExcepcionExpo {
 //        Configuracion c = new Configuracion();
 //        conectarExpo();
@@ -922,5 +917,15 @@ public class CADexpo {
 //        }
 //        return c;
 //    }
-
+    //método para convertir una bytea en imagen
+    public Image ConvertirImagen(byte[] bytes) throws IOException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        Iterator readers = ImageIO.getImageReadersByFormatName("jpeg");
+        ImageReader reader = (ImageReader) readers.next();
+        Object source = bis;
+        ImageInputStream iis = ImageIO.createImageInputStream(source);
+        reader.setInput(iis, true);
+        ImageReadParam param = reader.getDefaultReadParam();
+        return reader.read(0, param);
+    }
 }

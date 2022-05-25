@@ -5,6 +5,8 @@
 package cadexpo;
 
 import cadexpo.Servidor.Servidor;
+import pojos.ExcepcionExpo;
+import pojos.Usuario;
 
 /**
  *
@@ -22,27 +24,7 @@ public class NewMain {
         
         servidor.start();
 
-        Disenador dis = new Disenador();
-        dis.setAlias("kitti");
-        dis.setDescripcion("uh llalal");
-        dis.setDiseñadorID(11);
-
-        //cad.eliminarDisenador(10);
-        //cad.insertarDisenador(dis);
-        //cad.actualizarDisenador(11,dis);
-        //System.out.println(cad.buscarDisenadores(11));
-        //System.out.println(cad.leerDisenadores());
-        Diseno di = new Diseno();
-        di.setNombre("kitidiseño");
-        di.setDescripcion("este es mi kittidiseño modificado");
-        di.setDiseñoID(11);
-        di.setDiseñador(dis);
-
-        //cad.insertarDiseno(di);
-        //cad.actualizarDiseno(11, di);
-        //cad.eliminarDiseno(11);
-        //System.out.println(cad.buscarDiseno(11));
-        //System.out.println(cad.leerDisenos());
+       
         
         Usuario u = new Usuario();
         u.setUser("kitiperrima3");

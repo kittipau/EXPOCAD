@@ -5,8 +5,6 @@
 package cadexpo.Servidor;
 
 import cadexpo.CADexpo;
-import cadexpo.ExcepcionExpo;
-import cadexpo.Usuario;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +14,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import pojos.ExcepcionExpo;
+import pojos.Usuario;
 
 /**
  *
@@ -60,6 +60,9 @@ public class SesionServidor extends Thread {
                 cad.eliminarUsuario(usuario.getUser());
             } else if (opcion.equalsIgnoreCase("3")){
                  usuario = (Usuario) ois.readObject();
+                 usuario = cad.iniciarSesion(usuario.getUser(), usuario.getContra());
+                 oos.writeObject(opcion);
+                 
             } 
 
             //cierro
