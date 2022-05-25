@@ -5,7 +5,9 @@
 package cadexpo;
 
 import cadexpo.Servidor.Servidor;
+import java.io.IOException;
 import pojos.ExcepcionExpo;
+import pojos.Participante;
 import pojos.Usuario;
 
 /**
@@ -17,7 +19,7 @@ public class NewMain {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws ExcepcionExpo {
+    public static void main(String[] args) throws ExcepcionExpo, IOException {
 
         CADexpo cad = new CADexpo();
         Servidor servidor = new Servidor();
@@ -30,6 +32,14 @@ public class NewMain {
         u.setUser("kitiperrima3");
         u.setMail("kiti@kitiwifi.com3");
         u.setContra("kk");
+        
+        Participante p = new Participante();
+        p.setNombreDisenador("kitti");
+        
+       
+        System.out.println(p.toString());
+        
+
 
         //cad.insertarUsuario(u);
         

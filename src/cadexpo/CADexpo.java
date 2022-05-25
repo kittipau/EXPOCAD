@@ -243,7 +243,7 @@ public class CADexpo {
         try {
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
             sentenciaPreparada.setString(1, username);
-            sentenciaPreparada.setString(1, contraseña);
+            sentenciaPreparada.setString(2, contraseña);
             ResultSet resultado = sentenciaPreparada.executeQuery();
 
             resultado.next();
@@ -317,23 +317,22 @@ public class CADexpo {
      * personalizada a través de ExcepcionExpo
      *
      */
-    public Participante buscarDisenador(Participante participante) throws ExcepcionExpo, IOException {
+    public Participante buscarDisenador(String nombre) throws ExcepcionExpo, IOException {
         Participante p = new Participante();
         conectarExpo();
-        String dml = "select * from BIAAF_PARTICIPANTE where aliasdisenador  = ?";
+        String dml = "select * from biaaf_participante where aliasdisenador =?";
         try {
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
-            sentenciaPreparada.setString(1, participante.getNombreDisenador());
+            sentenciaPreparada.setString(1, nombre);
             ResultSet resultado = sentenciaPreparada.executeQuery();
 
             resultado.next();
             p.setDescripcionDiseno(resultado.getString("descripciondiseno"));
             p.setDesripcionDisenador(resultado.getString("descripciondisenador"));
-            p.setNombreDisenador(resultado.getString("NOMBREDISENADOR"));
+            p.setNombreDisenador(resultado.getString("ALIASDISENADOR"));
             p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
             p.setParticipanteID(resultado.getInt("ID"));
-            p.setImagenDiseno(ConvertirImagen(resultado.getBytes("IMAGENDISENO")));
-            p.setImagenDisenador(ConvertirImagen(resultado.getBytes("IMAGENDISENADOR")));
+
 
             sentenciaPreparada.close();
             conexion.close();
