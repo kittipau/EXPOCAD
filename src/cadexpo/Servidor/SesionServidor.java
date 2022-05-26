@@ -39,47 +39,48 @@ public class SesionServidor extends Thread {
             //Recibo la opción para saber qué método invocar  
 
             DataInputStream dis = new DataInputStream(clienteConectado.getInputStream());
-            // abro el objeto que recibiré
+            // abro el objeto que recibiré y leo la opción
             String opcion = dis.readUTF();
             System.out.println(opcion);
 
-            ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
             //abro el cad
 
-            OutputStream os = clienteConectado.getOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(os);
+           
+           
 
             //preparo el objeto que devolveré
             if (opcion.equalsIgnoreCase("1")) {
-                //leo el objeto            
-                usuario = (Usuario) ois.readObject();
+                //leo el objeto  
+               ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
+               usuario = (Usuario) ois.readObject();
                 //lo inserto en la BD
-                cad.insertarUsuario(usuario);
+               cad.insertarUsuario(usuario);
             } else if (opcion.equalsIgnoreCase("2")) {
+                ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
                 //leo el objeto 
                 usuario = (Usuario) ois.readObject();
                 //elimino el usuario
                 cad.eliminarUsuario(usuario.getUser());
             } else if (opcion.equalsIgnoreCase("3")) {
+                 ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
 
-                DataInputStream dis2 = new DataInputStream(clienteConectado.getInputStream());
+                 ois = new ObjectInputStream(clienteConectado.getInputStream());
+	         participante = (Participante) ois.readObject();
+                 System.out.println("Leo el objeto" + participante.toString());
+                 
+                 participante.setNombreDisenador("assd");
+                 participante.setDescripcionDiseno("fadfsdfsfsdfsdfsdffg jfksh ds");
+               
+                //participante = cad.buscarDisenador(participante.get);
+                ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
+                oos.writeObject(participante);
+                System.out.println(participante.toString());
+                oos.close();
 
-                System.out.println("paso por aqui1");
-                String nombre = dis2.readUTF();
+            }            //cierro
 
-                Participante p = new Participante();
-               // p = cad.buscarDisenador(nombre);
-
-                oos.writeObject(p);
-                System.out.println(p.toString());
-
-            }
-
-            //cierro
-
-            ois.close();
-            os.close();
-            oos.close();
+        
+           
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println(ex.getMessage());
         } catch (ExcepcionExpo ex) {
