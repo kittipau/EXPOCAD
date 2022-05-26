@@ -247,10 +247,10 @@ public class CADexpo {
             ResultSet resultado = sentenciaPreparada.executeQuery();
 
             resultado.next();
-            u.setUsuarioID(resultado.getInt("USUARIO_ID"));
-            u.setContra(resultado.getString("CONTRA"));
+            u.setUsuarioID(resultado.getInt("ID"));
+            u.setContra(resultado.getString("CONTRASENA"));
             u.setUser(resultado.getString("USERNAME"));
-            u.setMail(resultado.getString("MAIL"));
+            u.setMail(resultado.getString("EMAIL"));
             sentenciaPreparada.close();
             conexion.close();
 
@@ -332,17 +332,18 @@ public class CADexpo {
             p.setNombreDisenador(resultado.getString("ALIASDISENADOR"));
             p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
             p.setParticipanteID(resultado.getInt("ID"));
-
+            //p.setImagenDiseno(ConvertirImagen(resultado.getBytes("IMAGENDISENO")));
+            //p.setImagenDisenador(ConvertirImagen(resultado.getBytes("IMAGENDISENADOR")));
 
             sentenciaPreparada.close();
             conexion.close();
 
-        } catch (SQLException ex) {
+        } catch (SQLException ex ) {
             ExcepcionExpo e = new ExcepcionExpo();
             e.setCodigoError(ex.getErrorCode());
             e.setMensajeErrorBD(ex.getMessage());
             e.setSentenciaSQL(dml);
-            switch (ex.getErrorCode()) {
+            switch (ex.getErrorCode() ) {
 
                 case 17011:
                     e.setMensajeErrorUsuario("No existe ningún artista con ese ID.");
@@ -376,12 +377,13 @@ public class CADexpo {
                 Participante p = new Participante();
                 p.setDescripcionDiseno(resultado.getString("descripciondiseno"));
                 p.setDesripcionDisenador(resultado.getString("descripciondisenador"));
-                p.setNombreDisenador(resultado.getString("NOMBREDISENADOR"));
+                p.setNombreDisenador(resultado.getString("ALIASDISENADOR"));
                 p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
                 p.setParticipanteID(resultado.getInt("ID"));
-                p.setImagenDiseno(ConvertirImagen(resultado.getBytes("IMAGENDISENO")));
-                p.setImagenDisenador(ConvertirImagen(resultado.getBytes("IMAGENDISENADOR")));
+                //p.setImagenDiseno(ConvertirImagen(resultado.getBytes("IMAGENDISENO")));
+                //p.setImagenDisenador(ConvertirImagen(resultado.getBytes("IMAGENDISENADOR")));
 
+                System.out.println(p.toString());
                 listaDisenadores.add(p);
             }
             resultado.close();
@@ -490,12 +492,13 @@ public class CADexpo {
 //        }
 //        return listadisenos;
 //    }
-
     /**
-     * // * Método para ver todos los usuarios de la Base de datos // * // *
+     * // * Método para ver todos los usuarios de la Base de datos // * //
+     *
+     *
      * @return listaUsuarios. Devuelve un ArrayList con la lista de usuarios //
-     * * @throws ExcepcionExpo En caso de algún error se produce la excepción //
-     * * personalizada a través de ExcepcionExpo //
+     * * @throws ExcepcionExpo En caso de algún error se produce la excepción
+     * // * personalizada a través de ExcepcionExpo //
      */
 //    public ArrayList<Usuario> leerUsuarios() throws ExcepcionExpo {
 //        ArrayList<Usuario> listaUsuarios = new ArrayList<Usuario>();
@@ -534,8 +537,9 @@ public class CADexpo {
 //    }
     /**
      * // * Método para insertar un nuevo diseñador en la Base de datos // * //
-     * * @param disenador Objeto Disenador con todos los datos que se quieren //
-     * * insertar // * @return Cantidad de registros insertados (1 si se ha
+     *
+     * * @param disenador Objeto Disenador con todos los datos que se quieren
+     * // * insertar // * @return Cantidad de registros insertados (1 si se ha
      * insertado, 0 si no.) // * @throws ExcepcionExpo En caso de algún error se
      * produce la excepción // * personalizada a través de ExcepcionExpo //
      */

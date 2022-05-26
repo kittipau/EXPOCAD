@@ -9,6 +9,7 @@ import java.io.IOException;
 import pojos.ExcepcionExpo;
 import pojos.Participante;
 import pojos.Usuario;
+import static sun.net.www.http.HttpClient.New;
 
 /**
  *
@@ -33,11 +34,21 @@ public class NewMain {
         u.setMail("kiti@kitiwifi.com3");
         u.setContra("kk");
         
-        Participante p = new Participante();
-        p.setNombreDisenador("kitti");
+        //Participante p = new Participante();
+        //p.setNombreDisenador("kitti");
         
+        //cad.eliminarUsuario("ASas");
+        
+//        u = cad.iniciarSesion("sfsd", "123");
+//        System.out.println(u.toString());
+//        
+   
+//        p = cad.buscarDisenador("kitti");
+//        System.out.println(p.toString());
        
-        System.out.println(p.toString());
+        
+        //cad.leerDisenadores();
+        //System.out.println(p.toString());
         
 
 

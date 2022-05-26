@@ -63,15 +63,12 @@ public class SesionServidor extends Thread {
                 cad.eliminarUsuario(usuario.getUser());
             } else if (opcion.equalsIgnoreCase("3")) {
                  ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
-
-                 ois = new ObjectInputStream(clienteConectado.getInputStream());
 	         participante = (Participante) ois.readObject();
-                 System.out.println("Leo el objeto" + participante.toString());
                  
-                 participante.setNombreDisenador("assd");
-                 participante.setDescripcionDiseno("fadfsdfsfsdfsdfsdffg jfksh ds");
+                 System.out.println("Leo el objeto" + participante.toString());
+    
                
-                //participante = cad.buscarDisenador(participante.get);
+                participante = cad.buscarDisenador(participante.getNombreDisenador());
                 ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
                 oos.writeObject(participante);
                 System.out.println(participante.toString());
