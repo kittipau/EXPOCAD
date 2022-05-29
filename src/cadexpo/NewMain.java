@@ -29,10 +29,12 @@ public class NewMain {
 
        
         
-        Usuario u = new Usuario();
-        u.setUser("kitiperrima3");
-        u.setMail("kiti@kitiwifi.com3");
-        u.setContra("kk");
+        //Usuario u = new Usuario();
+        //u.setUser("kitiperrima3");
+        //u.setMail("kiti@kitiwifi.com3");
+        //u.setContra("kk");
+        
+        //cad.buscarDisenador("kitti");
         
         //Participante p = new Participante();
         //p.setNombreDisenador("kitti");

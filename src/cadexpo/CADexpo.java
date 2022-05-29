@@ -23,6 +23,7 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.UIManager;
+import org.postgresql.largeobject.LargeObjectManager;
 import pojos.ExcepcionExpo;
 import pojos.Usuario;
 import pojos.Configuracion;
@@ -321,19 +322,20 @@ public class CADexpo {
         Participante p = new Participante();
         conectarExpo();
         String dml = "select * from biaaf_participante where aliasdisenador =?";
+
+
         try {
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
             sentenciaPreparada.setString(1, nombre);
-            ResultSet resultado = sentenciaPreparada.executeQuery();
-
+            ResultSet resultado = sentenciaPreparada.executeQuery();            
             resultado.next();
             p.setDescripcionDiseno(resultado.getString("descripciondiseno"));
             p.setDesripcionDisenador(resultado.getString("descripciondisenador"));
             p.setNombreDisenador(resultado.getString("ALIASDISENADOR"));
             p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
             p.setParticipanteID(resultado.getInt("ID"));
-            //p.setImagenDiseno(ConvertirImagen(resultado.getBytes("IMAGENDISENO")));
-            //p.setImagenDisenador(ConvertirImagen(resultado.getBytes("IMAGENDISENADOR")));
+            p.setImagenDisenador(resultado.getBytes("imagendiseador"));
+            p.setImagenDiseno(resultado.getBytes("IMAGENDISENO"));
 
             sentenciaPreparada.close();
             conexion.close();
@@ -380,8 +382,8 @@ public class CADexpo {
                 p.setNombreDisenador(resultado.getString("ALIASDISENADOR"));
                 p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
                 p.setParticipanteID(resultado.getInt("ID"));
-                //p.setImagenDiseno(ConvertirImagen(resultado.getBytes("IMAGENDISENO")));
-                //p.setImagenDisenador(ConvertirImagen(resultado.getBytes("IMAGENDISENADOR")));
+               // p.setImagenDisenador(resultado.getBytes("IMAGENDISENADOR"));
+               // p.setImagenDiseno(resultado.getBytes("IMAGENDISENO"));
 
                 System.out.println(p.toString());
                 listaDisenadores.add(p);
@@ -402,6 +404,44 @@ public class CADexpo {
         return listaDisenadores;
     }
 
+    
+        public ArrayList<Participante> listarGanadores() throws ExcepcionExpo, IOException {
+        ArrayList<Participante> listaDisenadores = new ArrayList<Participante>();
+        conectarExpo();
+        String dql1 = "select diseno_id, count(*) as votos FROM biaaf_usuario GROUP BY diseno_id";
+
+        try {
+            Statement sentencia = conexion.createStatement();
+            ResultSet resultado = sentencia.executeQuery(dql1);
+
+            while (resultado.next()) {
+                Participante p = new Participante();
+                p.setDescripcionDiseno(resultado.getString("descripciondiseno"));
+                p.setDesripcionDisenador(resultado.getString("descripciondisenador"));
+                p.setNombreDisenador(resultado.getString("ALIASDISENADOR"));
+                p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
+                p.setParticipanteID(resultado.getInt("ID"));
+                p.setImagenDisenador(resultado.getBytes("IMAGENDISENADOR"));
+                p.setImagenDiseno(resultado.getBytes("IMAGENDISENO"));
+
+                System.out.println(p.toString());
+                listaDisenadores.add(p);
+            }
+            resultado.close();
+
+            sentencia.close();
+            conexion.close();
+        } catch (SQLException ex) {
+            ExcepcionExpo e = new ExcepcionExpo();
+            e.setCodigoError(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql1);
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
+
+            throw e;
+        }
+        return listaDisenadores;
+    }
 //   
 // 
 //    /**

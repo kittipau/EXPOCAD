@@ -39,6 +39,7 @@ public class SesionServidor extends Thread {
             //Recibo la opción para saber qué método invocar  
 
             DataInputStream dis = new DataInputStream(clienteConectado.getInputStream());
+            System.out.println("Nueva sesión");
             // abro el objeto que recibiré y leo la opción
             String opcion = dis.readUTF();
             System.out.println(opcion);
