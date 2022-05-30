@@ -12,6 +12,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import pojos.ExcepcionExpo;
@@ -36,6 +37,7 @@ public class SesionServidor extends Thread {
             CADexpo cad = new CADexpo();
             Usuario usuario = new Usuario();
             Participante participante = new Participante();
+            ArrayList<Participante> listaParticipantes = new ArrayList<Participante>();
             //Recibo la opción para saber qué método invocar  
 
             DataInputStream dis = new DataInputStream(clienteConectado.getInputStream());
@@ -43,19 +45,15 @@ public class SesionServidor extends Thread {
             // abro el objeto que recibiré y leo la opción
             String opcion = dis.readUTF();
             System.out.println(opcion);
-
-            //abro el cad
-
-           
-           
+            //abro el cad                
 
             //preparo el objeto que devolveré
             if (opcion.equalsIgnoreCase("1")) {
                 //leo el objeto  
-               ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
-               usuario = (Usuario) ois.readObject();
+                ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
+                usuario = (Usuario) ois.readObject();
                 //lo inserto en la BD
-               cad.insertarUsuario(usuario);
+                cad.insertarUsuario(usuario);
             } else if (opcion.equalsIgnoreCase("2")) {
                 ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
                 //leo el objeto 
@@ -63,22 +61,40 @@ public class SesionServidor extends Thread {
                 //elimino el usuario
                 cad.eliminarUsuario(usuario.getUser());
             } else if (opcion.equalsIgnoreCase("3")) {
-                 ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
-	         participante = (Participante) ois.readObject();
-                 
-                 System.out.println("Leo el objeto" + participante.toString());
-    
-               
+                ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
+                participante = (Participante) ois.readObject();
+
+                System.out.println("Leo el objeto" + participante.toString());
+
                 participante = cad.buscarDisenador(participante.getNombreDisenador());
                 ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
                 oos.writeObject(participante);
                 System.out.println(participante.toString());
                 oos.close();
 
-            }            //cierro
+            } else if (opcion.equalsIgnoreCase("4")) {
+                ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
+                usuario = (Usuario) ois.readObject();
 
-        
-           
+                usuario = cad.iniciarSesion(usuario.getUser(), usuario.getContra());
+                ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
+                oos.writeObject(usuario);
+
+            } else if (opcion.equalsIgnoreCase("5")) {
+                ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
+                usuario = (Usuario) ois.readObject();
+
+                usuario = cad.buscarUsuario(usuario.getUser());
+                ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
+                oos.writeObject(usuario);
+
+            } else if (opcion.equalsIgnoreCase("6")) {
+                listaParticipantes = cad.leerDisenadores();
+                ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
+                oos.writeObject(listaParticipantes);
+                System.out.println(listaParticipantes.toString());
+            }
+
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println(ex.getMessage());
         } catch (ExcepcionExpo ex) {
