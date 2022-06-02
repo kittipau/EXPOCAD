@@ -28,6 +28,7 @@ import pojos.ExcepcionExpo;
 import pojos.Usuario;
 import pojos.Configuracion;
 import pojos.Participante;
+import pojos.Votante;
 
 /**
  *
@@ -90,17 +91,19 @@ public class CADexpo {
      * @throws ExcepcionExpo En caso de algún error se produce la excepción
      * personalizada a través de ExcepcionExpo
      */
-    public int insertarUsuario(Usuario usuario) throws ExcepcionExpo {
+    
+    public int insertarVotante (Votante votante) throws ExcepcionExpo {
         conectarExpo();
         int registrosafectados = 0;
-        String dml = "insert into biaaf_usuario(USERNAME, EMAIL, CONTRASENA)"
+        String dml = "insert into BIAAF_VOTANTE (NOMBRE, APELLIDO, EMAIL)"
                 + "values ( ?, ?, ?)";
         try {
 
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
-            sentenciaPreparada.setObject(1, usuario.getUser());
-            sentenciaPreparada.setObject(2, usuario.getMail());
-            sentenciaPreparada.setObject(3, usuario.getContra());
+            sentenciaPreparada.setObject(1, votante.getNombre());
+            sentenciaPreparada.setObject(2, votante.getApellido());
+            sentenciaPreparada.setObject(3, votante.getMail());
+
             registrosafectados = sentenciaPreparada.executeUpdate();
             sentenciaPreparada.close();
             conexion.close();
@@ -132,6 +135,45 @@ public class CADexpo {
 
         return registrosafectados;
     }
+    public int insertarUsuario(Usuario usuario) throws ExcepcionExpo {
+        conectarExpo();
+        int registrosafectados = 0;
+        String dml = "insert into biaaf_usuario(USERNAME, EMAIL, CONTRASENA)"
+                + "values ( ?, ?, ?)";
+        try {
+
+            PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
+            sentenciaPreparada.setObject(1, usuario.getUser());
+            sentenciaPreparada.setObject(2, usuario.getMail());
+            sentenciaPreparada.setObject(3, usuario.getContra());
+            registrosafectados = sentenciaPreparada.executeUpdate();
+            sentenciaPreparada.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionExpo e = new ExcepcionExpo();
+            e.setCodigoError(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+
+            switch (ex.getErrorCode()) {
+                case 23505:
+                    e.setMensajeErrorUsuario("Ya existe un usuario con ese nombre con ese mail");
+                    break;
+                case 22001:
+                    e.setMensajeErrorUsuario("El usuario tiene un máximo de 20 caracteres, el mail de 35 y la contraseña de 10."); 
+                case 23502:
+                    e.setMensajeErrorUsuario("Todos los campos son obligatorios.");
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
+            }
+            throw e;
+
+        }
+
+        return registrosafectados;
+    }
+    
 
     /**
      * Método para eliminar un disenador de la Base de datos
@@ -331,11 +373,11 @@ public class CADexpo {
             ResultSet resultado = sentenciaPreparada.executeQuery();
             resultado.next();
             p.setDescripcionDiseno(resultado.getString("descripciondiseno"));
-            p.setDesripcionDisenador(resultado.getString("descripciondisenador"));
+            p.setPaisDisenador(resultado.getString("PAISDISENADOR"));
             p.setNombreDisenador(resultado.getString("ALIASDISENADOR"));
             p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
             p.setParticipanteID(resultado.getInt("ID"));
-            p.setImagenDisenador(resultado.getBytes("IMAGENDISEADOR"));
+            p.setImagenDisenador(resultado.getBytes("IMAGENDISENADOR"));
             p.setImagenDiseno(resultado.getBytes("IMAGENDISENO"));
 
             sentenciaPreparada.close();
@@ -379,11 +421,11 @@ public class CADexpo {
             while (resultado.next()) {
                 Participante p = new Participante();
                 p.setDescripcionDiseno(resultado.getString("descripciondiseno"));
-                p.setDesripcionDisenador(resultado.getString("descripciondisenador"));
+                p.setPaisDisenador(resultado.getString("PAISDISENADOR"));
                 p.setNombreDisenador(resultado.getString("ALIASDISENADOR"));
                 p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
                 p.setParticipanteID(resultado.getInt("ID"));
-                p.setImagenDisenador(resultado.getBytes("IMAGENDISEADOR"));
+                p.setImagenDisenador(resultado.getBytes("IMAGENDISENADOR"));
                 p.setImagenDiseno(resultado.getBytes("IMAGENDISENO"));
 
                 System.out.println(p.toString());
@@ -417,7 +459,7 @@ public class CADexpo {
             while (resultado.next()) {
                 Participante p = new Participante();
                 p.setDescripcionDiseno(resultado.getString("descripciondiseno"));
-                p.setDesripcionDisenador(resultado.getString("descripciondisenador"));
+                p.setPaisDisenador(resultado.getString("PAISDISENADOR"));
                 p.setNombreDisenador(resultado.getString("ALIASDISENADOR"));
                 p.setNombreDiseno(resultado.getString("NOMBREDISENO"));
                 p.setParticipanteID(resultado.getInt("ID"));
@@ -454,7 +496,7 @@ public class CADexpo {
 
             while (resultado.next()) {
 
-                c.setFechaLimita(resultado.getDate("fechalimte"));
+                c.setFechaLimite(resultado.getDate("fechalimte"));
                 System.out.println(c.toString());
             }
             resultado.close();
@@ -472,5 +514,43 @@ public class CADexpo {
         }
         return c;
     }
+    
+    public Votante comprobarEmail (String email) throws ExcepcionExpo, IOException {
+        Votante v = new Votante();
+        conectarExpo();
+        String dml = "select * from BIAAF_VOTANTE where EMAIL =?";
+
+        try {
+            PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
+            sentenciaPreparada.setString(1, email);
+            ResultSet resultado = sentenciaPreparada.executeQuery();
+            resultado.next();
+            v.setNombre(resultado.getString("nombre"));
+            v.setApellido(resultado.getString("apellido"));
+            v.setMail(resultado.getString("email"));
+
+
+            sentenciaPreparada.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionExpo e = new ExcepcionExpo();
+            e.setCodigoError(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+            switch (ex.getErrorCode()) {
+
+                case 17011:
+                    e.setMensajeErrorUsuario("No existe ningún artista con ese ID.");
+                    break;
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador.");
+
+            }
+            throw e;
+        }
+        return v;
+    } 
+
 
 }
