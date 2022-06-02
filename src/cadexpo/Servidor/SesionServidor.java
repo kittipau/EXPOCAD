@@ -15,9 +15,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import pojos.Configuracion;
 import pojos.ExcepcionExpo;
 import pojos.Participante;
-import pojos.Usuario;
+
+import pojos.Votante;
 
 /**
  *
@@ -35,9 +37,10 @@ public class SesionServidor extends Thread {
     public void run() {
         try {
             CADexpo cad = new CADexpo();
-            Usuario usuario = new Usuario();
+            Votante votante = new Votante();
             Participante participante = new Participante();
             ArrayList<Participante> listaParticipantes = new ArrayList<Participante>();
+            Configuracion config = new Configuracion();
             //Recibo la opción para saber qué método invocar  
 
             DataInputStream dis = new DataInputStream(clienteConectado.getInputStream());
@@ -51,15 +54,20 @@ public class SesionServidor extends Thread {
             if (opcion.equalsIgnoreCase("1")) {
                 //leo el objeto  
                 ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
-                usuario = (Usuario) ois.readObject();
+                votante = (Votante) ois.readObject();
                 //lo inserto en la BD
-                cad.insertarUsuario(usuario);
+                cad.insertarVotante(votante);
+
             } else if (opcion.equalsIgnoreCase("2")) {
+                //leo el objeto  
                 ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
-                //leo el objeto 
-                usuario = (Usuario) ois.readObject();
-                //elimino el usuario
-                cad.eliminarUsuario(usuario.getUser());
+                votante = (Votante) ois.readObject();
+
+                votante = cad.comprobarEmail(votante.getMail());
+
+                ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
+                oos.writeObject(votante);
+
             } else if (opcion.equalsIgnoreCase("3")) {
                 ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
                 participante = (Participante) ois.readObject();
@@ -74,25 +82,23 @@ public class SesionServidor extends Thread {
 
             } else if (opcion.equalsIgnoreCase("4")) {
                 ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
-                usuario = (Usuario) ois.readObject();
+                votante = (Votante) ois.readObject();
+                cad.comprobarEmail(votante.getMail());
 
-                usuario = cad.iniciarSesion(usuario.getUser(), usuario.getContra());
                 ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
-                oos.writeObject(usuario);
-
-            } else if (opcion.equalsIgnoreCase("5")) {
-                ObjectInputStream ois = new ObjectInputStream(clienteConectado.getInputStream());
-                usuario = (Usuario) ois.readObject();
-
-                usuario = cad.buscarUsuario(usuario.getUser());
-                ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
-                oos.writeObject(usuario);
+                oos.writeObject(votante);
 
             } else if (opcion.equalsIgnoreCase("6")) {
                 listaParticipantes = cad.leerDisenadores();
                 ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
                 oos.writeObject(listaParticipantes);
                 System.out.println(listaParticipantes.toString());
+
+            } else if (opcion.equalsIgnoreCase("7")) {
+                config = cad.horaFin();
+                ObjectOutputStream oos = new ObjectOutputStream(clienteConectado.getOutputStream());
+                oos.writeObject(config);
+                System.out.println(config.toString());
             }
 
         } catch (IOException | ClassNotFoundException ex) {

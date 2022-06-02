@@ -25,7 +25,6 @@ import javax.imageio.stream.ImageInputStream;
 import javax.swing.UIManager;
 import org.postgresql.largeobject.LargeObjectManager;
 import pojos.ExcepcionExpo;
-import pojos.Usuario;
 import pojos.Configuracion;
 import pojos.Participante;
 import pojos.Votante;
@@ -95,14 +94,15 @@ public class CADexpo {
     public int insertarVotante (Votante votante) throws ExcepcionExpo {
         conectarExpo();
         int registrosafectados = 0;
-        String dml = "insert into BIAAF_VOTANTE (NOMBRE, APELLIDO, EMAIL)"
-                + "values ( ?, ?, ?)";
+        String dml = "insert into BIAAF_VOTANTE (NOMBRE, APELLIDO, EMAIL, DISENO_ID)"
+                + "values ( ?, ?, ?, ?)";
         try {
 
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
             sentenciaPreparada.setObject(1, votante.getNombre());
             sentenciaPreparada.setObject(2, votante.getApellido());
             sentenciaPreparada.setObject(3, votante.getMail());
+            sentenciaPreparada.setObject(4, votante.getParticipante().getParticipanteID());
 
             registrosafectados = sentenciaPreparada.executeUpdate();
             sentenciaPreparada.close();
@@ -135,6 +135,9 @@ public class CADexpo {
 
         return registrosafectados;
     }
+    
+    
+    /**
     public int insertarUsuario(Usuario usuario) throws ExcepcionExpo {
         conectarExpo();
         int registrosafectados = 0;
@@ -174,7 +177,7 @@ public class CADexpo {
         return registrosafectados;
     }
     
-
+*/
     /**
      * Método para eliminar un disenador de la Base de datos
      *
@@ -221,7 +224,7 @@ public class CADexpo {
      * @throws ExcepcionExpo En caso de algún error se produce la excepción
      * personalizada a través de ExcepcionExpo
      */
-    public int actualizarUsuario(String username, Usuario u) throws ExcepcionExpo {
+  /**  public int actualizarUsuario(String username, Usuario u) throws ExcepcionExpo {
 
         conectarExpo();
         int registrosafectados = 0;
@@ -269,7 +272,7 @@ public class CADexpo {
         }
         return registrosafectados;
     }
-
+*/
     /**
      * Método para buscar la información de un diseñador de la Base de Datos
      *
@@ -279,6 +282,7 @@ public class CADexpo {
      * personalizada a través de ExcepcionExpo
      *
      */
+    /**
     public Usuario iniciarSesion(String username, String contraseña) throws ExcepcionExpo {
         Usuario u = new Usuario();
         conectarExpo();
@@ -315,6 +319,7 @@ public class CADexpo {
         }
         return u;
     }
+   
 
     public Usuario buscarUsuario(String username) throws ExcepcionExpo {
         Usuario u = new Usuario();
@@ -488,7 +493,7 @@ public class CADexpo {
     public Configuracion horaFin() throws ExcepcionExpo, IOException {
         Configuracion c = new Configuracion();
         conectarExpo();
-        String dql1 = "select * from BIAAF_CONFIGURAION";
+        String dql1 = "select * from BIAAF_CONFIGURACION";
 
         try {
             Statement sentencia = conexion.createStatement();
@@ -496,7 +501,7 @@ public class CADexpo {
 
             while (resultado.next()) {
 
-                c.setFechaLimite(resultado.getDate("fechalimte"));
+                c.setFechaLimite(resultado.getDate("fechalimite"));
                 System.out.println(c.toString());
             }
             resultado.close();

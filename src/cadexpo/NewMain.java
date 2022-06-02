@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import pojos.ExcepcionExpo;
 import pojos.Participante;
-import pojos.Usuario;
 import static sun.net.www.http.HttpClient.New;
 
 /**
@@ -30,12 +29,8 @@ public class NewMain {
 
        
         
-        Usuario u = new Usuario();
-        u.setUser("kitiperrima3");
-        u.setMail("kiti@kitiwifi.com3");
-        u.setContra("kk");
-        
-        cad.insertarUsuario(u);
+
+        //cad.insertarUsuario(u);
         
         
         //cad.buscarDisenador("kitti");
